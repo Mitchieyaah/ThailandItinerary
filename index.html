@@ -1,0 +1,117 @@
+HTML
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Thailand Itinerary</title>
+  <style>
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+      background: #f4f4f9; margin: 0; padding: 20px; 
+    }
+    h2 { text-align: center; color: #333; }
+    .item { 
+      background: #fff; padding: 15px; margin-bottom: 10px; border-radius: 8px; 
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; 
+    }
+    .details { flex-grow: 1; cursor: pointer; }
+    .item h3 { margin: 0 0 5px 0; font-size: 16px; }
+    .item p { margin: 0; font-size: 14px; color: #666; }
+    .attach-btn { 
+      background: #007aff; color: white; border: none; padding: 8px 12px; 
+      border-radius: 6px; font-size: 12px; cursor: pointer; margin-left: 10px;
+    }
+    
+    #modal { 
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+      background: rgba(0,0,0,0.9); justify-content: center; align-items: center; flex-direction: column; z-index: 1000; 
+    }
+    #modal img { max-width: 95%; max-height: 80%; border-radius: 8px; object-fit: contain; }
+    #close-btn { 
+      margin-top: 20px; padding: 12px 24px; background: white; color: #000; 
+      border: none; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Thailand Itinerary</h2>
+  <div id="itinerary-list"></div>
+  <input type="file" id="file-input" accept="image/*" style="display:none;">
+
+  <div id="modal">
+    <img id="proof-img" src="" alt="Booking Proof">
+    <button id="close-btn" onclick="closeModal()">Close</button>
+  </div>
+
+  <script>
+    // Customize your schedule here
+    const itinerary = [
+      { id: 'flight1', title: 'Flight to Bangkok (BKK)', time: 'Day 1 - 10:00 AM' },
+      { id: 'hotel1', title: 'Check-in: Sukhumvit Hotel', time: 'Day 1 - 2:00 PM' },
+      { id: 'tour1', title: 'Ayutthaya Temple Tour', time: 'Day 2 - 8:00 AM' },
+      { id: 'flight2', title: 'Flight to Chiang Mai (CNX)', time: 'Day 4 - 1:00 PM' }
+    ];
+
+    let currentUploadId = null;
+
+    function renderList() {
+      const list = document.getElementById('itinerary-list');
+      list.innerHTML = '';
+      itinerary.forEach(item => {
+        const hasImg = localStorage.getItem(item.id);
+        const div = document.createElement('div');
+        div.className = 'item';
+        div.innerHTML = `
+          <div class="details" onclick="showProof('${item.id}')">
+            <h3>${item.title}</h3>
+            <p>${item.time}</p>
+          </div>
+          <button class="attach-btn" onclick="triggerUpload('${item.id}')">
+            ${hasImg ? 'Update Photo' : 'Attach Photo'}
+          </button>
+        `;
+        list.appendChild(div);
+      });
+    }
+
+    function triggerUpload(id) {
+      currentUploadId = id;
+      document.getElementById('file-input').click();
+    }
+
+    document.getElementById('file-input').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        try {
+          localStorage.setItem(currentUploadId, event.target.result);
+          renderList();
+        } catch (err) {
+          alert("Image too large for local storage. Try taking a screenshot of the booking to reduce the file size before uploading.");
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+
+    function showProof(id) {
+      const imgData = localStorage.getItem(id);
+      if (imgData) {
+        document.getElementById('proof-img').src = imgData;
+        document.getElementById('modal').style.display = 'flex';
+      } else {
+        alert("No booking proof attached yet. Click 'Attach Photo' first.");
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('modal').style.display = 'none';
+    }
+
+    renderList();
+  </script>
+</body>
+</html>
